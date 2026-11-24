@@ -122,6 +122,22 @@ public sealed class ContainerTests
         Assert.Equal(0u, records[1].Constant);
     }
 
+    [Fact]
+    public void A_stored_record_whose_dxbc_chunk_table_is_bad_is_skipped()
+    {
+        var container = new byte[0x30];
+
+        Encoding.ASCII.GetBytes(DxbcContainer.Magic).CopyTo(container, 0);
+        BinaryPrimitives.WriteInt32LittleEndian(container.AsSpan(DxbcContainer.TotalSizeOffset), container.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(container.AsSpan(0x1C), 1);
+        BinaryPrimitives.WriteInt32LittleEndian(container.AsSpan(0x20), 0x10);
+
+        var records = ShaderArchiveScanner.ScanFile(
+            Stored("VS_Clear_f05fef9c_Wrapped", container), ShaderArchiveScanner.ExecutableRegion);
+
+        Assert.Empty(records);
+    }
+
     // u8 name length + 1, name, NUL, tag 0x32, then the record's sizes and data.
     private static byte[] Compressed(string name, byte[] container)
     {

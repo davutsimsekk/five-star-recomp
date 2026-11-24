@@ -238,7 +238,7 @@ public static class ShaderArchiveScanner
         {
             DxbcContainer.Parse(container);
         }
-        catch (ArgumentOutOfRangeException)
+        catch (Exception error) when (error is InvalidDataException or ArgumentOutOfRangeException)
         {
             return null;
         }
